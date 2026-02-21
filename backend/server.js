@@ -11,13 +11,29 @@ const prisma = new PrismaClient();
 app.use(cors());
 app.use(express.json());
 
+
+//auth middleware
+const auth = (req, res, next) => {
+    const token = req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+        return res.status(401).json({ error: "No token provided" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.userId = decoded.userId;
+        next();
+    } catch (err) {
+        return res.status(401).json({ error: "Invalid token" });
+    }
+};
+
 // auth
 app.post("/register", async (req, res) => {
     try {
         const { username, password, age, gender } = req.body;
-
         const hashed = await bcrypt.hash(password, 10);
-
         const user = await prisma.user.create({
             data: { username, password: hashed, age, gender },
         });
@@ -43,19 +59,19 @@ app.post("/login", async (req, res) => {
 });
 
 //track
-
-app.post("/track", async (req, res) => {
-    const { userId, featureName } = req.body;
-
+app.post("/track", auth, async (req, res) => {
+    const { featureName } = req.body;
     await prisma.featureClick.create({
-        data: { userId, featureName },
+        data: {
+            userId: req.userId,
+            featureName,
+        },
     });
 
-    res.json({ message: "Tracked" });
+    res.json({ message: "Tracked successfully" });
 });
 
 //analytics
-
 app.get("/analytics", async (req, res) => {
     const { gender, minAge, maxAge, start, end } = req.query;
 
