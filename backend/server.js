@@ -75,12 +75,20 @@ app.get("/analytics", async (req, res) => {
         },
     });
 
-    const grouped = {};
+    const featureCounts = {};
+    const timeTrend = {};
+
     clicks.forEach((c) => {
-        grouped[c.featureName] = (grouped[c.featureName] || 0) + 1;
+        featureCounts[c.featureName] = (featureCounts[c.featureName] || 0) + 1;
+
+        const day = new Date(c.timestamp).toISOString().split("T")[0];
+        timeTrend[day] = (timeTrend[day] || 0) + 1;
     });
 
-    res.json(grouped);
+    res.json({
+        barChart: featureCounts,
+        lineChart: timeTrend,
+    });
 });
 
 app.listen(process.env.PORT, () =>
