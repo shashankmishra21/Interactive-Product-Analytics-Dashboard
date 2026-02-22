@@ -11,7 +11,7 @@ export default function Sidebar() {
                 </div>
             </div>
 
-            <div className="text-sm text-white/80">Developed by Shashank</div>
+            {/* <div className="text-sm text-white/80">Developed by Shashank</div> */}
         </aside>
     );
 }

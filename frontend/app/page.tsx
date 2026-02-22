@@ -106,8 +106,9 @@ export default function Landing() {
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-slate-200 dark:border-white/10 mt-16 py-8 text-center text-sm text-slate-700 dark:text-slate-400">
+      <footer className="border-t border-slate-200 dark:border-white/10 mt-16 py-8 text-center text-sm text-slate-800 dark:text-slate-300">
         © {new Date().getFullYear()} InsightLoop — Interactive Product Analytics Dashboard
+        <br /> Developed by Shashank
       </footer>
     </div>
   );

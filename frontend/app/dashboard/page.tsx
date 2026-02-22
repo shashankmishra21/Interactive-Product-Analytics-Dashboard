@@ -176,8 +176,7 @@ export default function DashboardPage() {
                         onBarClick={(feature: string) => {
                             setSelectedFeature(feature);
                             track(feature);
-                        }}
-                    />
+                        }}/>
 
                     <LineChartCard
                         data={lineData}
@@ -185,9 +184,10 @@ export default function DashboardPage() {
                         title={selectedFeature ? `Trend for ${selectedFeature}` : "Overall Trend"} />
                 </div>
 
-                <div className="mt-10 text-center text-xs text-gray-600">
-                    Interactive Product Analytics • Full Stack Challenge
-                </div>
+                <footer className="border-t border-slate-200 dark:border-white/10 mt-7 py-3 text-center text-sm text-slate-700 dark:text-slate-400">
+                    © {new Date().getFullYear()} InsightLoop — Interactive Product Analytics Dashboard 
+                    <br/> Developed by Shashank
+                </footer>
             </div>
         </div>
     );
