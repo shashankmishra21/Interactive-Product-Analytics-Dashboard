@@ -1,6 +1,6 @@
 export default function Sidebar() {
     return (
-        <aside className="hidden md:flex w-64 bg-gradient-to-b from-[#0f4cbd] via-[#1e6de0] to-[#2aa7df]
+        <aside className="hidden lg:flex w-64 bg-gradient-to-b from-[#0f4cbd] via-[#1e6de0] to-[#2aa7df]
     text-white p-8 flex-col justify-between shadow-xl">
 
             <div>

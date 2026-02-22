@@ -119,17 +119,9 @@ export default function DashboardPage() {
         window.location.href = "/login";
     };
 
-    if (!loading && barData.length === 0) {
-        return (
-            <div className="flex items-center justify-center h-screen text-gray-500">
-                No analytics data yet. Try changing filters.
-            </div>
-        );
-    }
-
 
     return (
-        <div className="min-h-screen bg-[#f5f7fb] flex flex-col md:flex-row">
+        <div className="min-h-screen bg-[#f5f7fb] flex flex-col lg:flex-row overflow-x-hidden">
 
             <Sidebar />
 
@@ -140,15 +132,14 @@ export default function DashboardPage() {
                 <DesktopHeader onLogout={logout} />
 
                 {/* KPI */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
                     <KpiCard title="Total Interactions" value={totalClicks} />
                     <KpiCard
                         title="Top Feature"
                         value={
                             barData.length
                                 ? barData.reduce((a, b) => (a.count > b.count ? a : b)).name
-                                : "-"
-                        } />
+                                : "-"} />
                     <KpiCard title="Total Features" value={barData.length} />
                     <KpiCard
                         title="Data Status"
@@ -163,8 +154,7 @@ export default function DashboardPage() {
                     onAge={handleAgeChange}
                     onGender={handleGenderChange}
                     onStart={handleStartDate}
-                    onEnd={handleEndDate}
-                />
+                    onEnd={handleEndDate} />
 
                 {selectedFeature && (
                     <div className="mb-3 text-sm text-indigo-600 font-medium">
@@ -179,10 +169,15 @@ export default function DashboardPage() {
                 )}
 
                 {/* Charts */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <BarChartCard
                         data={barData}
-                        loading={loading} />
+                        loading={loading}
+                        onBarClick={(feature: string) => {
+                            setSelectedFeature(feature);
+                            track(feature);
+                        }}
+                    />
 
                     <LineChartCard
                         data={lineData}

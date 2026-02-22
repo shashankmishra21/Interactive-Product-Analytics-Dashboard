@@ -1,9 +1,9 @@
 export default function MobileHeader({ onLogout }: { onLogout: () => void }) {
     return (
-        <div className="md:hidden bg-gradient-to-r from-[#0f4cbd] to-[#2aa7df] text-white p-4 shadow">
-            <div className="flex justify-between items-center">
+        <div className="lg:hidden bg-gradient-to-r from-[#0f4cbd] to-[#2aa7df] text-white px-6 py-5 shadow-md">
+            <div className="max-w-5xl mx-auto flex justify-between items-center">
                 <div>
-                    <h2 className="text-lg font-semibold">Analytics</h2>
+                    <h2 className="text-lg font-semibold tracking-tight">Analytics</h2>
                     <p className="text-xs opacity-80">Interactive Dashboard</p>
                 </div>
 
