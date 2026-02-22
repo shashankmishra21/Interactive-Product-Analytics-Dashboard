@@ -37,7 +37,10 @@ export default function Filters({
                 value={endDate}
                 onChange={(e) => onEnd(e.target.value)}
                 className="input w-full sm:w-auto" />
+
             <div className="text-sm text-gray-700 font-medium w-full sm:w-auto">
+                Data seeded across all age groups, genders & months
+                <br />
                 Filters auto-saved via cookies
             </div>
         </div>
