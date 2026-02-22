@@ -3,22 +3,23 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line, ResponsiveContainer } from "recharts";
 
-type BarItem = {
-    name: string;
-    count: number;
-};
+import Sidebar from "./sidebar";
+import MobileHeader from "./MobileHeader";
+import DesktopHeader from "./DesktopHeader";
+import KpiCard from "./KpiCard";
+import Filters from "./Filters";
+import BarChartCard from "./BarChartCard";
+import LineChartCard from "./LineChartCard";
 
-type LineItem = {
-    date: string;
-    count: number;
-};
+import { BarItem, LineItem } from "./type";
 
-export default function Dashboard() {
+export default function DashboardPage() {
     const [barData, setBarData] = useState<BarItem[]>([]);
     const [lineData, setLineData] = useState<LineItem[]>([]);
     const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
+    const [lastTracked, setLastTracked] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
 
     const [gender, setGender] = useState(Cookies.get("gender") || "");
     const [ageRange, setAgeRange] = useState(Cookies.get("ageRange") || "");
@@ -29,57 +30,53 @@ export default function Dashboard() {
         typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
     const fetchAnalytics = async () => {
+        setLoading(true);
+
         let minAge: number | undefined;
         let maxAge: number | undefined;
 
-        if (ageRange === "<18") {
-            minAge = 0;
-            maxAge = 17;
-        } else if (ageRange === "18-40") {
-            minAge = 18;
-            maxAge = 40;
-        } else if (ageRange === ">40") {
-            minAge = 41;
-            maxAge = 100;
-        }
+        if (ageRange === "<18") { minAge = 0; maxAge = 17; }
+        else if (ageRange === "18-40") { minAge = 18; maxAge = 40; }
+        else if (ageRange === ">40") { minAge = 41; maxAge = 100; }
 
         if (startDate && endDate && startDate > endDate) {
             alert("Start date must be before End date");
             return;
         }
-        const res = await axios.get("http://localhost:5000/analytics", {
-            params: { gender, minAge, maxAge, start: startDate, end: endDate },
-        });
 
-        const bar: BarItem[] = Object.entries(res.data.barChart).map(
-            ([name, count]) => ({
+        try {
+            const res = await axios.get("http://localhost:5000/analytics", {
+                params: { gender, minAge, maxAge, start: startDate, end: endDate },
+            });
+
+            const bar = Object.entries(res.data.barChart).map(([name, count]) => ({
                 name,
                 count: Number(count),
-            })
-        );
+            }));
 
-        const line: LineItem[] = Object.entries(res.data.lineChart).map(
-            ([date, count]) => ({
+            const line = Object.entries(res.data.lineChart).map(([date, count]) => ({
                 date,
                 count: Number(count),
-            })
-        );
+            }));
 
-        setBarData(bar);
-        setLineData(line);
+            setBarData(bar);
+            setLineData(line);
+        } catch (err) {
+            console.error("Analytics fetch failed");
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            window.location.href = "/login";
-        }
+        if (!token) window.location.href = "/login";
     }, []);
 
     useEffect(() => {
         fetchAnalytics();
     }, [gender, ageRange, startDate, endDate]);
 
+    // Track
     const track = async (featureName: string) => {
         if (!token) return;
         await axios.post(
@@ -87,135 +84,114 @@ export default function Dashboard() {
             { featureName },
             { headers: { Authorization: `Bearer ${token}` } }
         );
+        setLastTracked(featureName);
     };
 
-    const handleGenderChange = (value: string) => {
-        setGender(value);
-        Cookies.set("gender", value);
+    // filte handling
+    const handleGenderChange = (v: string) => {
+        setGender(v);
+        Cookies.set("gender", v);
         track("gender_filter");
     };
 
-    const handleAgeChange = (value: string) => {
-        setAgeRange(value);
-        Cookies.set("ageRange", value);
+    const handleAgeChange = (v: string) => {
+        setAgeRange(v);
+        Cookies.set("ageRange", v);
         track("age_filter");
     };
 
-    const handleStartDate = (value: string) => {
-        setStartDate(value);
-        Cookies.set("startDate", value);
+    const handleStartDate = (v: string) => {
+        setStartDate(v);
+        Cookies.set("startDate", v);
         track("date_filter");
     };
 
-    const handleEndDate = (value: string) => {
-        setEndDate(value);
-        Cookies.set("endDate", value);
+    const handleEndDate = (v: string) => {
+        setEndDate(v);
+        Cookies.set("endDate", v);
         track("date_filter");
     };
+
+    const totalClicks = barData.reduce((a, b) => a + b.count, 0);
+
+    const logout = () => {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+    };
+
+    if (!loading && barData.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-screen text-gray-500">
+                No analytics data yet. Try changing filters.
+            </div>
+        );
+    }
 
 
     return (
-        <div className="min-h-screen bg-slate-950 text-white p-6">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Product Analytics Dashboard</h1>
+        <div className="min-h-screen bg-[#f5f7fb] flex flex-col md:flex-row">
 
-                <button onClick={() => {
-                    localStorage.removeItem("token");
-                    window.location.href = "/login";
-                }}
-                    className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">
-                    Logout
-                </button>
-            </div>
+            <Sidebar />
 
-            {/* Filters */}
-            <div className="bg-slate-900 p-4 rounded-xl mb-6 flex flex-wrap gap-4">
-                <select
-                    value={ageRange}
-                    onChange={(e) => handleAgeChange(e.target.value)}
-                    className="bg-slate-800 p-2 rounded" >
-                    <option value="">Age</option>
-                    <option value="<18">&lt;18</option>
-                    <option value="18-40">18-40</option>
-                    <option value=">40">&gt;40</option>
-                </select>
+            <MobileHeader onLogout={logout} />
 
-                <select
-                    value={gender}
-                    onChange={(e) => handleGenderChange(e.target.value)}
-                    className="bg-slate-800 p-2 rounded">
-                    <option value="">Gender</option>
-                    <option>Male</option>
-                    <option>Female</option>
-                    <option>Other</option>
-                </select>
+            <div className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl mx-auto w-full">
 
-                <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => handleStartDate(e.target.value)}
-                    className="bg-slate-800 p-2 rounded" />
+                <DesktopHeader onLogout={logout} />
 
-                <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => handleEndDate(e.target.value)}
-                    className="bg-slate-800 p-2 rounded" />
-            </div>
-
-            {/* Charts */}
-            <div className="grid md:grid-cols-2 gap-6">
-                {/* Bar Chart */}
-                <div className="bg-slate-900 p-4 rounded-xl h-[350px] flex flex-col">
-                    <h2 className="mb-2 font-semibold">Feature Usage</h2>
-                    <div className="flex-1">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={barData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                                <XAxis dataKey="name" stroke="#aaa" />
-                                <YAxis stroke="#aaa" />
-                                <Tooltip />
-                                <Bar
-                                    dataKey="count"
-                                    fill="#3b82f6"
-                                    onClick={(data: any) => {
-                                        if (!data?.name) return;
-                                        setSelectedFeature(data.name);
-                                        track(data.name);
-                                    }}
-                                />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
+                {/* KPI */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6">
+                    <KpiCard title="Total Interactions" value={totalClicks} />
+                    <KpiCard
+                        title="Top Feature"
+                        value={
+                            barData.length
+                                ? barData.reduce((a, b) => (a.count > b.count ? a : b)).name
+                                : "-"
+                        } />
+                    <KpiCard title="Total Features" value={barData.length} />
+                    <KpiCard
+                        title="Data Status"
+                        value={totalClicks > 0 ? "Seeded / Active" : "No Data"} />
                 </div>
 
-                {/* line chart */}
-                <div className="bg-slate-900 p-4 rounded-xl h-[350px] flex flex-col">
-                    <h2 className="mb-2 font-semibold">
-                        {selectedFeature ? `Trend for ${selectedFeature}` : "Overall Trend"}
-                    </h2>
+                <Filters
+                    ageRange={ageRange}
+                    gender={gender}
+                    startDate={startDate}
+                    endDate={endDate}
+                    onAge={handleAgeChange}
+                    onGender={handleGenderChange}
+                    onStart={handleStartDate}
+                    onEnd={handleEndDate}
+                />
 
-                    <div className="flex-1">
-                        {lineData.length === 0 ? (
-                            <div className="flex items-center justify-center h-full text-slate-400">
-                                No data available for selected filters
-                            </div>
-                        ) : (
-                            <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={lineData}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                                    <XAxis dataKey="date" stroke="#aaa" />
-                                    <YAxis stroke="#aaa" />
-                                    <Tooltip />
-                                    <Line type="monotone"
-                                        dataKey="count"
-                                        stroke="#10b981"
-                                        strokeWidth={2}
-                                        dot={false} />
-                                </LineChart>
-                            </ResponsiveContainer>
-                        )}
+                {selectedFeature && (
+                    <div className="mb-3 text-sm text-indigo-600 font-medium">
+                        Showing analytics for: {selectedFeature}
                     </div>
+                )}
+
+                {lastTracked && (
+                    <div className="text-xs text-gray-500 mb-4">
+                        Last interaction tracked: {lastTracked}
+                    </div>
+                )}
+
+                {/* Charts */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <BarChartCard
+                        data={barData}
+                        loading={loading} />
+
+                    <LineChartCard
+                        data={lineData}
+                        loading={loading}
+                        title={selectedFeature ? `Trend for ${selectedFeature}` : "Overall Trend"} />
+                </div>
+
+                <div className="mt-10 text-center text-xs text-gray-600">
+                    Interactive Product Analytics • Full Stack Challenge
                 </div>
             </div>
         </div>
