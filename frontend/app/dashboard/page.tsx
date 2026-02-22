@@ -45,7 +45,7 @@ export default function DashboardPage() {
         }
 
         try {
-            const res = await axios.get("http://localhost:5000/analytics", {
+            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/analytics`, {
                 params: { gender, minAge, maxAge, start: startDate, end: endDate },
             });
 
@@ -80,7 +80,7 @@ export default function DashboardPage() {
     const track = async (featureName: string) => {
         if (!token) return;
         await axios.post(
-            "http://localhost:5000/track",
+            `${process.env.NEXT_PUBLIC_API_URL}/track`,
             { featureName },
             { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -176,7 +176,7 @@ export default function DashboardPage() {
                         onBarClick={(feature: string) => {
                             setSelectedFeature(feature);
                             track(feature);
-                        }}/>
+                        }} />
 
                     <LineChartCard
                         data={lineData}
@@ -185,8 +185,8 @@ export default function DashboardPage() {
                 </div>
 
                 <footer className="border-t border-slate-200 dark:border-white/10 mt-7 py-3 text-center text-sm text-slate-700 dark:text-slate-400">
-                    © {new Date().getFullYear()} InsightLoop — Interactive Product Analytics Dashboard 
-                    <br/> Developed by Shashank
+                    © {new Date().getFullYear()} InsightLoop — Interactive Product Analytics Dashboard
+                    <br /> Developed by Shashank
                 </footer>
             </div>
         </div>
