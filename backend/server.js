@@ -45,17 +45,39 @@ app.post("/register", async (req, res) => {
 });
 
 app.post("/login", async (req, res) => {
-    const { username, password } = req.body;
+    try {
+        const { username, password } = req.body;
+        console.log("LOGIN ATTEMPT:", username, password);
 
-    const user = await prisma.user.findUnique({ where: { username } });
-    if (!user) return res.status(401).json({ error: "Invalid" });
+        if (!username || !password) {
+            return res.status(400).json({ error: "Missing credentials" });
+        }
 
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(401).json({ error: "Invalid" });
+        const user = await prisma.user.findFirst({
+            where: { username: username },
+        });
 
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET);
+        if (!user) {
+            return res.status(401).json({ error: "User not found" });
+        }
 
-    res.json({ token });
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (!isMatch) {
+            return res.status(401).json({ error: "Wrong password" });
+        }
+
+        const token = jwt.sign(
+            { userId: user.id },
+            process.env.JWT_SECRET || "secret",
+            { expiresIn: "7d" }
+        );
+
+        return res.json({ token });
+    } catch (err) {
+        console.error("LOGIN ERROR:", err);
+        return res.status(500).json({ error: "Server error" });
+    }
 });
 
 //track
@@ -75,11 +97,12 @@ app.post("/track", auth, async (req, res) => {
 app.get("/analytics", async (req, res) => {
     const { gender, minAge, maxAge, start, end } = req.query;
 
+
     const clicks = await prisma.featureClick.findMany({
         where: {
             timestamp: {
-                gte: start ? new Date(start) : undefined,
-                lte: end ? new Date(end) : undefined,
+                gte: start ? new Date(start + "T00:00:00.000Z") : undefined,
+                lte: end ? new Date(end + "T23:59:59.999Z") : undefined,
             },
             user: {
                 gender: gender || undefined,
@@ -107,6 +130,5 @@ app.get("/analytics", async (req, res) => {
     });
 });
 
-app.listen(process.env.PORT, () =>
-    console.log("Server running on port", process.env.PORT)
-);
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log("Server running on port", PORT));

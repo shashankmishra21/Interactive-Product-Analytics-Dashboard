@@ -70,6 +70,13 @@ export default function Dashboard() {
     };
 
     useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            window.location.href = "/login";
+        }
+    }, []);
+
+    useEffect(() => {
         fetchAnalytics();
     }, [gender, ageRange, startDate, endDate]);
 
@@ -109,15 +116,24 @@ export default function Dashboard() {
 
     return (
         <div className="min-h-screen bg-slate-950 text-white p-6">
-            <h1 className="text-3xl font-bold mb-6">Product Analytics Dashboard</h1>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold">Product Analytics Dashboard</h1>
+
+                <button onClick={() => {
+                    localStorage.removeItem("token");
+                    window.location.href = "/login";
+                }}
+                    className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded">
+                    Logout
+                </button>
+            </div>
 
             {/* Filters */}
             <div className="bg-slate-900 p-4 rounded-xl mb-6 flex flex-wrap gap-4">
                 <select
                     value={ageRange}
                     onChange={(e) => handleAgeChange(e.target.value)}
-                    className="bg-slate-800 p-2 rounded"
-                >
+                    className="bg-slate-800 p-2 rounded" >
                     <option value="">Age</option>
                     <option value="<18">&lt;18</option>
                     <option value="18-40">18-40</option>
@@ -127,8 +143,7 @@ export default function Dashboard() {
                 <select
                     value={gender}
                     onChange={(e) => handleGenderChange(e.target.value)}
-                    className="bg-slate-800 p-2 rounded"
-                >
+                    className="bg-slate-800 p-2 rounded">
                     <option value="">Gender</option>
                     <option>Male</option>
                     <option>Female</option>
@@ -139,15 +154,13 @@ export default function Dashboard() {
                     type="date"
                     value={startDate}
                     onChange={(e) => handleStartDate(e.target.value)}
-                    className="bg-slate-800 p-2 rounded"
-                />
+                    className="bg-slate-800 p-2 rounded" />
 
                 <input
                     type="date"
                     value={endDate}
                     onChange={(e) => handleEndDate(e.target.value)}
-                    className="bg-slate-800 p-2 rounded"
-                />
+                    className="bg-slate-800 p-2 rounded" />
             </div>
 
             {/* Charts */}
@@ -194,13 +207,11 @@ export default function Dashboard() {
                                     <XAxis dataKey="date" stroke="#aaa" />
                                     <YAxis stroke="#aaa" />
                                     <Tooltip />
-                                    <Line
-                                        type="monotone"
+                                    <Line type="monotone"
                                         dataKey="count"
                                         stroke="#10b981"
                                         strokeWidth={2}
-                                        dot={false}
-                                    />
+                                        dot={false} />
                                 </LineChart>
                             </ResponsiveContainer>
                         )}
