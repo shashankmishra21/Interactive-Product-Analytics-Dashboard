@@ -56,7 +56,7 @@ export default function Login() {
 
                 {/* Title */}
                 <h1 className="text-2xl font-semibold text-center text-white mb-1">
-                    Welcome You're Missed
+                    Welcome Back - you were missed
                 </h1>
 
                 <p className="text-center text-slate-400 text-sm mb-6">
