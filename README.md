@@ -1,4 +1,4 @@
-# InsightLoop — Interactive Product Analytics Dashboard
+# InsightLoop - Interactive Product Analytics Dashboard
 
 A full-stack analytics dashboard built as part of the **Vigility Technologies Full Stack Challenge**.  
 The system tracks user feature interactions and provides interactive analytics with dynamic filtering.
