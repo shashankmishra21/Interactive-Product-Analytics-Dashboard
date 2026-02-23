@@ -19,6 +19,12 @@ https://interactive-product-analytics-dashboard.onrender.com
 
 - Username: `user1`, `user2`, `user3`, ...
 - Password: `password`
+- (Any seeded user follows same password: password)
+---
+
+## Design Philosophy
+
+The goal of this project was not only to build a working dashboard, but to design it in a way that ensures structured data generation, consistent analytics output, and a clean user experience even under different filter combinations.
 
 ---
 
@@ -39,6 +45,12 @@ https://interactive-product-analytics-dashboard.onrender.com
 - PostgreSQL  
 - JWT Authentication  
 - bcrypt (Password Hashing)  
+
+## Production Deployment
+
+- Backend deployed on Render
+- Frontend deployed on Vercel
+- PostgreSQL hosted externally
 
 ---
 
@@ -118,7 +130,7 @@ Frontend runs at: http://localhost:3000
 ### Demo Credentials
 
 - Username: user1, user2, user3 and so on
-- Password: password (Any seeded user follows same password: dummy)
+- Password: password (Any seeded user follows same password: password)
 
 ---
 
@@ -128,23 +140,26 @@ Frontend runs at: http://localhost:3000
 
 ### The backend follows a simple layered structure:
 
-- Authentication Layer
+**Authentication Layer**
 - JWT-based stateless authentication
 - Password hashing with bcrypt
-- Tracking System
-- Every interaction stored in featureClick table
-- Linked via foreign key to user
-- Analytics Endpoint
+
+**Tracking System**
+- Every interaction stored in `featureClick` table
+- Linked via foreign key to `User`
+
+**Analytics Endpoint**
 - Applies filters dynamically:
-- Age
-- Gender
-- Date range
+  - Age
+  - Gender
+  - Date range
 - Aggregates:
-- Feature count (Bar Chart)
-- Daily trend (Line Chart)
-- Database Design
-- User
-- FeatureClick
+  - Feature count (Bar Chart)
+  - Daily trend (Line Chart)
+
+**Database Design**
+- `User`
+- `FeatureClick`
 - Indexed timestamp for efficient filtering
 
 ## Frontend Architecture
@@ -177,7 +192,7 @@ If this system had to process approximately 1 million write events per minute, t
 
 For storage, the database could be made more scalable by using techniques like partitioning and read replicas to distribute the load. Frequently accessed data could also be cached using Redis to avoid repeated database queries. A load balancer would then be used to distribute incoming traffic across multiple stateless backend instances so that the system could scale horizontally with increasing traffic. Additionally, monitoring, logging, and simple rate limiting would be implemented to ensure that the system stays healthy and doesn’t get overloaded.
 
-Using this design, the system would be able to handle very high event throughput while staying responsive and reliable.
+This architecture would allow the system to scale horizontally, handle traffic spikes gracefully, and maintain reliability even under extremely high event volumes.
 
 ### Deliverables
 
