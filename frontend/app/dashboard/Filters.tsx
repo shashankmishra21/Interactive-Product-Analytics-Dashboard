@@ -64,8 +64,6 @@ export default function Filters({ ageRange, gender, startDate, endDate, onAge, o
 
             {/* Info */}
             <div className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                Data seeded across all age groups, genders & months
-                <br />
                 Filters auto-saved via cookies
             </div>
         </div>
