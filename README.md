@@ -66,16 +66,19 @@ cd backend
 Install dependencies
 npm install
 
-Configure Environment Variables
+## Configure Environment Variables
+
 Create a .env file inside the backend folder:
 DATABASE_URL="your_postgres_connection_string"
 JWT_SECRET="your_secret_key"
 PORT=5000
 
 Run Prisma Migrations
+
 npx prisma migrate dev
 
 Seed Database
+
 node seed.js
 
 This generates:
