@@ -4,57 +4,60 @@ const bcrypt = require("bcrypt");
 const prisma = new PrismaClient();
 
 async function main() {
+  console.log("Seeding production data...");
+
+  const hashed = await bcrypt.hash("password", 10);
+
   const features = ["date_filter", "age_filter", "gender_filter", "bar_chart"];
   const genders = ["Male", "Female", "Other"];
-  const ageGroups = [
-    { min: 10, max: 17 },  // <18
-    { min: 18, max: 40 },  // 18-40
-    { min: 41, max: 70 },  // >40
-  ];
 
-  console.log("Seeding structured analytics data...");
+  for (let i = 1; i <= 20; i++) {
+    const username = `user${i}`;
 
-  for (let month = 0; month < 12; month++) {
-    for (let gender of genders) {
-      for (let group of ageGroups) {
+    const user = await prisma.user.upsert({
+      where: { username },
+      update: {
+        password: hashed, // ensure correct password
+      },
+      create: {
+        username,
+        password: hashed,
+        age: 18 + (i % 40),
+        gender: genders[i % 3],
+      },
+    });
 
-        const hashed = await bcrypt.hash("dummy", 10);
+    const existingClicks = await prisma.featureClick.count({
+      where: { userId: user.id },
+    });
 
-        const user = await prisma.user.create({
+    if (existingClicks === 0) {
+      for (let j = 0; j < 20; j++) {
+        const feature =
+          features[Math.floor(Math.random() * features.length)];
+
+        const date = new Date();
+        date.setMonth(date.getMonth() - Math.floor(Math.random() * 12));
+        date.setDate(Math.floor(Math.random() * 28) + 1);
+
+        await prisma.featureClick.create({
           data: {
-            username: `user_${month}_${gender}_${group.min}`,
-            password: hashed,
-            age: Math.floor(Math.random() * (group.max - group.min + 1)) + group.min,
-            gender,
+            userId: user.id,
+            featureName: feature,
+            timestamp: date,
           },
         });
-
-        // Ensure minimum 10 entries per month per category
-        for (let i = 0; i < 10; i++) {
-          const feature =
-            features[Math.floor(Math.random() * features.length)];
-
-          const date = new Date();
-          date.setMonth(date.getMonth() - month);
-          date.setDate(Math.floor(Math.random() * 28) + 1);
-
-          await prisma.featureClick.create({
-            data: {
-              userId: user.id,
-              featureName: feature,
-              timestamp: date,
-            },
-          });
-        }
       }
     }
   }
 
-  console.log("Structured seed completed");
+  console.log("Seed completed successfully");
 }
 
 main()
-  .catch(console.error)
+  .catch((e) => {
+    console.error("Seed error:", e);
+  })
   .finally(async () => {
     await prisma.$disconnect();
   });
