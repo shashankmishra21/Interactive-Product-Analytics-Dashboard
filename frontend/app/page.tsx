@@ -110,14 +110,6 @@ export default function Landing() {
               Get started
             </Link>
 
-            <Link
-              href="/demo"
-              className="px-6 py-3 rounded-lg text-sm font-medium
-                border border-slate-300 dark:border-white/15
-                hover:bg-black/5 dark:hover:bg-white/5
-                transition">
-              Live demo
-            </Link>
           </div>
         </div>
 
