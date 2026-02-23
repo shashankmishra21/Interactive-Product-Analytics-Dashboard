@@ -22,6 +22,21 @@ https://interactive-product-analytics-dashboard.onrender.com
 - (Any seeded user follows same password: password)
 ---
 
+flowchart TD
+
+    U[Client Browser]
+    F[Next.js Frontend]
+    B[Express Backend]
+    A[Auth Middleware - JWT]
+    DB[(PostgreSQL + Prisma ORM)]
+
+    U --> F
+    F -->|Login / Analytics / Track| B
+    B --> A
+    A --> B
+    B --> DB
+
+
 ## Design Philosophy
 
 The goal of this project was not only to build a working dashboard, but to design it in a way that ensures structured data generation, consistent analytics output, and a clean user experience even under different filter combinations.
